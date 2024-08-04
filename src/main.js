@@ -137,6 +137,8 @@ const MAIN = {
     update_radio: (C, VC, EV, eps) => {
         const grid_radio = document.getElementById("grid");
         const grid_select = SVG.clear("grid_select");
+        const coords = document.getElementById("coords");
+        coords.textContent = "";
         SVG.clear("back_svg");
         SVG.clear("front_svg");
         if (grid_radio.checked) {
@@ -171,7 +173,6 @@ const MAIN = {
                 id: "points", fill: MAIN.color.C, r: 5,
                 filter: (i) => VC[i].every(j => C2[j] != undefined),
             });
-            const coords = document.getElementById("coords");
             for (let i = 0; i < VC.length; ++i) {
                 const el = document.getElementById(`front_svg${i}`);
                 if (el == undefined) { continue; }
@@ -198,7 +199,7 @@ const MAIN = {
                 P.push([x/g, y/g]);
             }
         }
-        SVG.draw_points(el, P, {r: Math.min(2, SVG.SCALE/g/10), fill: MAIN.color.C});
+        SVG.draw_points(el, P, {r: Math.min(5, SVG.SCALE/g/10), fill: MAIN.color.C});
     },
     grid_size: (C, eps) => {
         const S = new Set();
