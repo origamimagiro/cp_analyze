@@ -123,6 +123,8 @@ const MAIN = {
     update_radio: (C, VC, EV, eps) => {
         const grid_radio = document.getElementById("grid");
         const grid_select = SVG.clear("grid_select");
+        const complex = document.getElementById("complex");
+        complex.textContent = "";
         const coords = document.getElementById("coords");
         coords.textContent = "";
         SVG.clear("back_svg");
@@ -151,10 +153,16 @@ const MAIN = {
             //     const D = pi_8_coord(c);
             // }
             const C2 = check_pi_8(C, 10**(-8));
-            const complex = C2.reduce((a, c) => {
-                return Math.max(a, (c ?? []).reduce((b, x) => b + x, 0))
+            const cov = C2.reduce((a, c) => a + ((c == undefined) ? 0 : 1), 0);
+            const per = Math.round(100*cov/C2.length);
+            const m = VC.reduce((a, [ci, cj]) => {
+                if ((C2[ci] == undefined) || (C2[cj] == undefined)) { return a; }
+                return Math.max(a,
+                    C2[ci].reduce((b, x) => b + Math.abs(x), 0),
+                    C2[cj].reduce((b, x) => b + Math.abs(x), 0)
+                );
             }, 0);
-            NOTE.log(`22.5 Complexity Level: ${complex}`);
+            complex.textContent = `| Complexity: ${m}, Coverage: ${per}% | `;
             SVG.draw_points(svg, VC.map(([a, b]) => [C[a], C[b]]), {
                 id: "points", fill: MAIN.color.C, r: 5,
                 filter: (i) => VC[i].every(j => C2[j] != undefined),
@@ -164,7 +172,7 @@ const MAIN = {
                 if (el == undefined) { continue; }
                 el.onclick = () => {
                     const [c1, c2] = VC[i].map(ci => C2[ci]);
-                    const s = `[${coord_str(c1)},${coord_str(c2)}]`;
+                    const s = `[ ${coord_str(c1)} , ${coord_str(c2)} ]`;
                     coords.textContent = s;
                 };
             }
