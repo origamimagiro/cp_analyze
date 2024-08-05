@@ -3,6 +3,7 @@ import { NOTE } from "./flatfolder/note.js";
 import { SVG } from "./flatfolder/svg.js";
 import { X } from "./flatfolder/conversion.js";
 import { AVL } from "./flatfolder/avl.js";
+import { IO } from "./flatfolder/io.js";
 
 window.onload = () => { MAIN.startup(); };  // entry point
 
@@ -62,24 +63,9 @@ const MAIN = {
         const file_name = document.getElementById("import").value;
         const parts = file_name.split(".");
         const type = parts[parts.length - 1].toLowerCase();
-        if (type != "fold") {
-            console.log(`Found file with extension ${type}, FOLD format required`);
-            return;
-        }
         NOTE.time(`Importing from file ${file_name}`);
-        const ex = JSON.parse(doc);
-        const properties = ["vertices_coords", "edges_vertices", "edges_assignment"];
-        const [V_org, EVi, EAi] = properties.map(property => {
-            const val = ex[property];
-            if (val == undefined) {
-                NOTE.time(`FOLD file must contain ${property}, but not found`);
-                return undefined;
-            }
-            return val;
-        });
-        for (const property of [V_org, EVi]) {
-            if (property == undefined) { return; }
-        }
+        const [V_org, VV, EVi, EAi, EF, FV, FE] =
+            IO.doc_type_side_2_V_VV_EV_EA_EF_FV_FE(doc, type, true);
         const Vi = M.normalize_points(V_org);
         const EPS = 10**(-3);
         const [C, VC] = MAIN.V_2_C_VC(Vi, EPS);
