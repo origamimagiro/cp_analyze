@@ -133,6 +133,7 @@ const MAIN = {
             vertices_coords:  V,
             edges_vertices:   EV,
             edges_assignment: EA,
+            faces_vertices:   FV,
         };
         const data = new Blob([JSON.stringify(FOLD, undefined, 2)], {
             type: "application/json"});
