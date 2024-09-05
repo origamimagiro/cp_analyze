@@ -173,13 +173,13 @@ const MAIN = {
             grid_select.onchange = (e) => {
                 const g = +e.target.value;
                 const n = M.get(g);
-                MAIN.update_grid(g);
+                MAIN.update_grid(g, C, VC, eps);
                 if (M.get(g) == C.length) {
                     MAIN.output_fixed(C, VC, EV, EA, FV, g);
                 }
             };
             const g = G[0][0];
-            MAIN.update_grid(g);
+            MAIN.update_grid(g, C, VC, eps);
             if (M.get(g) == C.length) {
                 MAIN.output_fixed(C, VC, EV, EA, FV, g);
             }
@@ -200,9 +200,10 @@ const MAIN = {
                 );
             }, 0);
             complex.textContent = `| Complexity: ${m}, Coverage: ${per}% | `;
+            const colors = VC.map(vC => MAIN.color[
+                vC.every(i => C2[i] != undefined) ? "C" :"M"]);
             SVG.draw_points(svg, VC.map(([a, b]) => [C[a], C[b]]), {
-                id: "points", fill: MAIN.color.C, r: 5,
-                filter: (i) => VC[i].every(j => C2[j] != undefined),
+                id: "points", r: 5, fill: colors
             });
             for (let i = 0; i < VC.length; ++i) {
                 const el = document.getElementById(`front_svg${i}`);
@@ -221,7 +222,7 @@ const MAIN = {
             // }
         }
     },
-    update_grid: (g) => {
+    update_grid: (g, C, VC, eps) => {
         const svg = SVG.clear("back_svg");
         const el = SVG.append("g", svg);
         const P = [];
@@ -230,7 +231,14 @@ const MAIN = {
                 P.push([x/g, y/g]);
             }
         }
-        SVG.draw_points(el, P, {r: Math.min(5, SVG.SCALE/g/10), fill: MAIN.color.C});
+        const r = Math.min(5, SVG.SCALE/g/10);
+        SVG.draw_points(el, P, {r, fill: MAIN.color.C});
+        const valid = C.map(c => Math.abs(c*g - Math.round(c*g)) < eps);
+        for (let i = 0; i < VC.length; ++i) {
+            const [u, v] = VC[i];
+            if (valid[u] && valid[v]) { continue; }
+            SVG.draw_points(el, [[C[u], C[v]]], {r, fill: MAIN.color.M});
+        }
     },
     grid_size: (C, eps) => {
         const S = new Set();
