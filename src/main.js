@@ -67,7 +67,7 @@ const MAIN = {
         const [V_org, VV, EVi, EAi, EF, FV, FE] =
             IO.doc_type_side_2_V_VV_EV_EA_EF_FV_FE(doc, type, true);
         const Vi = M.normalize_points(V_org);
-        const EPS = 10**(-3);
+        const EPS = 10**(-8);
         const [C, VC] = MAIN.V_2_C_VC(Vi, EPS);
         const target = {C, VC, EV: EVi, EA: EAi, FV};
         MAIN.update(target, SVG.clear("input"), EPS);
