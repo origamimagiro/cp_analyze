@@ -142,7 +142,7 @@ const MAIN = {
         const button = document.createElement("input");
         ex.appendChild(link);
         link.appendChild(button);
-        link.setAttribute("download", `${name}_grid_aligned.fold`);
+        link.setAttribute("download", `${name}.fold`);
         link.setAttribute("href", window.URL.createObjectURL(data));
         button.setAttribute("type", "button");
         button.setAttribute("value", "Export");
@@ -235,7 +235,7 @@ const MAIN = {
     grid_size: (C, eps) => {
         const S = new Set();
         const G = [];
-        for (let i = 3; i < 1000; ++i) {
+        for (let i = 1; i < 1000; ++i) {
             let count = 0;
             for (const c of C) {
                 const c_ = c*i;
