@@ -69,7 +69,7 @@ const MAIN = {
         const Vi = M.normalize_points(V_org);
         const EPS = 10**(-3);
         const [C, VC] = MAIN.V_2_C_VC(Vi, EPS);
-        const target = {C, VC, EV: EVi, EA: EAi};
+        const target = {C, VC, EV: EVi, EA: EAi, FV};
         MAIN.update(target, SVG.clear("input"), EPS);
     },
     V_2_C_VC: (V, eps) => {
@@ -95,7 +95,7 @@ const MAIN = {
         return [C, VC];
     },
     update: (FOLD, svg, eps) => {
-        const {C, VC, EV, EA} = FOLD;
+        const {C, VC, EV, EA, FV} = FOLD;
         SVG.append("rect", svg, {
             x: 0,
             y: 0,
@@ -116,11 +116,38 @@ const MAIN = {
                 filter: (i) => EA[i] == t,
             });
         }
-        grid_radio.onchange = (e) => MAIN.update_radio(C, VC, EV, eps);
-        pi_8_radio.onchange = (e) => MAIN.update_radio(C, VC, EV, eps);
-        MAIN.update_radio(C, VC, EV, eps);
+        grid_radio.onchange = (e) => MAIN.update_radio(C, VC, EV, EA, FV, eps);
+        pi_8_radio.onchange = (e) => MAIN.update_radio(C, VC, EV, EA, FV, eps);
+        MAIN.update_radio(C, VC, EV, EA, FV, eps);
     },
-    update_radio: (C, VC, EV, eps) => {
+    output_fixed: (C, VC, EV, EA, FV, g) => {
+        const C_ = C.map(c => Math.round(c*g));
+        const V = VC.map(vC => M.expand(vC, C_));
+        const path = document.getElementById("import").value.split("\\");
+        const name = path[path.length - 1].split(".")[0];
+        const FOLD = {
+            file_spec: 1.1,
+            file_creator: "cp_analyzer",
+            file_title: name,
+            file_classes: ["singleModel"],
+            vertices_coords:  V,
+            edges_vertices:   EV,
+            edges_assignment: EA,
+        };
+        const data = new Blob([JSON.stringify(FOLD, undefined, 2)], {
+            type: "application/json"});
+        const ex = SVG.clear("export");
+        const link = document.createElement("a");
+        const button = document.createElement("input");
+        ex.appendChild(link);
+        link.appendChild(button);
+        link.setAttribute("download", `${name}_grid_aligned.fold`);
+        link.setAttribute("href", window.URL.createObjectURL(data));
+        button.setAttribute("type", "button");
+        button.setAttribute("value", "Export");
+    },
+    update_radio: (C, VC, EV, EA, FV, eps) => {
+        const ex = SVG.clear("export");
         const grid_radio = document.getElementById("grid");
         const grid_select = SVG.clear("grid_select");
         const complex = document.getElementById("complex");
@@ -132,6 +159,7 @@ const MAIN = {
         if (grid_radio.checked) {
             grid_select.style.display = "inline";
             const G = MAIN.grid_size(C, eps);
+            const M = new Map(G);
             G.sort(([g1, n1], [g2, n2]) => n2*n2/g2 - n1*n1/g1);
             for (let i = 0; i < G.length; ++i) {
                 const [g, count] = G[i];
@@ -143,9 +171,17 @@ const MAIN = {
             }
             grid_select.onchange = (e) => {
                 const g = +e.target.value;
+                const n = M.get(g);
                 MAIN.update_grid(g);
+                if (M.get(g) == C.length) {
+                    MAIN.output_fixed(C, VC, EV, EA, FV, g);
+                }
             };
-            MAIN.update_grid(G[0][0]);
+            const g = G[0][0];
+            MAIN.update_grid(g);
+            if (M.get(g) == C.length) {
+                MAIN.output_fixed(C, VC, EV, EA, FV, g);
+            }
         } else {
             grid_select.style.display = "none";
             const svg = SVG.clear("front_svg");
